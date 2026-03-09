@@ -536,9 +536,7 @@ async function fetchData(){
   }
   setSyncBadge('loading','데이터 불러오는 중...');
   try {
-    const resp = await fetch(apiUrl);
-    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
+    const json = await fetchJsonp(apiUrl);
     if(!json.ok || !Array.isArray(json.data)) throw new Error('잘못된 응답 형식');
     RAW = json.data;
     localStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), data: RAW}));
@@ -799,4 +797,7 @@ if(apiUrl){
 }
 
 // 5분마다 자동 새로고침
-setInterval(()=>{ if(apiUrl) fetchData(); }, 
+setInterval(()=>{ if(apiUrl) fetchData(); }, 5*60*1000);
+</script>
+</body>
+</html>
