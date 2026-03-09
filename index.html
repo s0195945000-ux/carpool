@@ -200,9 +200,9 @@ body::before{content:'';position:fixed;inset:0;
 .dow-sat{color:#1565C0;} .dow-sun{color:#C62828;}
 .gm-badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;}
 .gm-geunmu{background:var(--blue2);color:#fff;} .gm-bibeon{background:#E0E0E0;color:#757575;}
-.driver-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;}
+.driver-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
 .pass-list{display:flex;flex-wrap:wrap;gap:3px;}
-.pass-chip{font-size:11px;padding:1px 7px;border-radius:12px;font-weight:500;}
+.pass-chip{font-size:11px;padding:1px 7px;border-radius:12px;font-weight:500;white-space:nowrap;}
 
 /* ── Guide ── */
 .guide-row{display:grid;grid-template-columns:130px 1fr auto;gap:12px;align-items:start;
@@ -799,7 +799,4 @@ if(apiUrl){
 }
 
 // 5분마다 자동 새로고침
-setInterval(()=>{ if(apiUrl) fetchData(); }, 5*60*1000);
-</script>
-</body>
-</html>
+setInterval(()=>{ if(apiUrl) fetchData(); }, 
