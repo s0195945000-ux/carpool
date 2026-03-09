@@ -326,7 +326,6 @@ body::before{content:'';position:fixed;inset:0;
             <th style="color:var(--shin-ac)">신동훈</th>
             <th style="color:var(--kim-ac)">김준기</th>
             <th style="color:var(--lee-ac)">이창현</th>
-            <th>비고</th>
           </tr></thead>
           <tbody id="month-tbody"></tbody>
         </table>
@@ -745,9 +744,14 @@ function renderMonthTable(){
     tr.innerHTML=`<td class="date-cell">${fmtDate(date)}${isToday?'<span class="today-mark">TODAY</span>':''}</td>
       <td class="dow-cell ${dc}">${dow}</td>
       <td><span class="gm-badge gm-geunmu">근무</span></td>
-      ${cells.join('')}
-      <td style="font-size:10px;color:${isAlert(note)?'var(--alert-a)':'var(--muted)'};max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${note}">${note?note.slice(0,12)+(note.length>12?'…':''):''}</td>`;
+      ${cells.join('')}`;
     tbody.appendChild(tr);
+    if(note) {
+      const noteRow = document.createElement('tr');
+      if(isToday) noteRow.className='today-row';
+      noteRow.innerHTML=`<td colspan="7" style="padding:3px 8px 7px;font-size:11px;color:${isAlert(note)?'var(--alert-a)':'var(--muted)'};border-bottom:1px solid var(--border);line-height:1.4;">${isAlert(note)?'⚠️ ':'💬 '}${note}</td>`;
+      tbody.appendChild(noteRow);
+    }
   });
 }
 
