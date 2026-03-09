@@ -167,16 +167,21 @@ body::before{content:'';position:fixed;inset:0;
 .month-tab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
   cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;}
 .month-tab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
-.month-table-wrap{padding:12px 16px 16px;overflow-x:auto;}
+.month-table-wrap{padding:8px 10px 12px;overflow-x:auto;}
 .month-table{width:100%;border-collapse:collapse;}
-.month-table th{font-size:11px;font-weight:700;color:var(--muted);padding:8px 10px;
+.month-table th{font-size:10px;font-weight:700;color:var(--muted);padding:6px 4px;
   text-align:center;border-bottom:2px solid var(--border);white-space:nowrap;}
-.month-table td{padding:9px 10px;text-align:center;font-size:13px;border-bottom:1px solid var(--border);}
+.month-table td{padding:5px 3px;text-align:center;font-size:11px;border-bottom:1px solid var(--border);}
 .month-table tr:last-child td{border-bottom:none;}
 .month-table tr.today-row td{background:var(--today);}
-.count-pill{display:inline-block;min-width:28px;padding:2px 8px;border-radius:20px;
-  font-size:13px;font-weight:700;font-family:'DM Mono',monospace;}
-.count-zero{color:var(--muted);font-size:12px;}
+.count-pill{display:inline-block;min-width:20px;padding:2px 5px;border-radius:12px;
+  font-size:11px;font-weight:700;font-family:'DM Mono',monospace;}
+.count-zero{color:var(--muted);font-size:11px;}
+@media(max-width:600px){
+  .month-table th{font-size:9px;padding:5px 3px;}
+  .month-table td{padding:4px 2px;font-size:10px;}
+  .count-pill{font-size:10px;padding:1px 4px;}
+}
 
 /* ── Schedule ── */
 .sched-tabs{display:flex;gap:6px;padding:12px 16px 0;}
@@ -198,8 +203,9 @@ body::before{content:'';position:fixed;inset:0;
   background:#FFF3CD;padding:1px 5px;border-radius:4px;margin-left:4px;}
 .dow-cell{font-weight:700;}
 .dow-sat{color:#1565C0;} .dow-sun{color:#C62828;}
-.gm-badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;}
+.gm-badge{display:inline-block;padding:2px 6px;border-radius:5px;font-size:11px;font-weight:700;}
 .gm-geunmu{background:var(--blue2);color:#fff;} .gm-bibeon{background:#E0E0E0;color:#757575;}
+@media(max-width:600px){.gm-badge{font-size:9px;padding:1px 4px;}}
 .driver-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
 .pass-list{display:flex;flex-wrap:wrap;gap:3px;}
 .pass-chip{font-size:11px;padding:1px 7px;border-radius:12px;font-weight:500;white-space:nowrap;}
@@ -740,7 +746,7 @@ function renderMonthTable(){
       <td class="dow-cell ${dc}">${dow}</td>
       <td><span class="gm-badge gm-geunmu">근무</span></td>
       ${cells.join('')}
-      <td style="font-size:11px;color:${isAlert(note)?'var(--alert-a)':'var(--muted)'}">${note}</td>`;
+      <td style="font-size:10px;color:${isAlert(note)?'var(--alert-a)':'var(--muted)'};max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${note}">${note?note.slice(0,12)+(note.length>12?'…':''):''}</td>`;
     tbody.appendChild(tr);
   });
 }
