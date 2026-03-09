@@ -502,6 +502,28 @@ function clearApiUrl(){
   showToast('초기화되었습니다');
 }
 
+
+// ════════════════════════════════════
+//  JSONP (CORS 우회)
+// ════════════════════════════════════
+function fetchJsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now();
+    window[cbName] = (data) => {
+      resolve(data);
+      delete window[cbName];
+      const s = document.getElementById(cbName);
+      if(s) s.remove();
+    };
+    const script = document.createElement('script');
+    script.id = cbName;
+    script.src = url + '?callback=' + cbName;
+    script.onerror = () => reject(new Error('스크립트 로드 실패'));
+    document.head.appendChild(script);
+    setTimeout(() => reject(new Error('시간 초과')), 10000);
+  });
+}
+
 // ════════════════════════════════════
 //  FETCH DATA
 // ════════════════════════════════════
@@ -514,7 +536,7 @@ async function fetchData(){
   }
   setSyncBadge('loading','데이터 불러오는 중...');
   try {
-    const resp = await fetch(apiUrl, { redirect: "follow" });
+    const resp = await fetch(apiUrl);
     if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     if(!json.ok || !Array.isArray(json.data)) throw new Error('잘못된 응답 형식');
