@@ -687,7 +687,7 @@ function renderNextCards(){
     const passHtml=pass.map(p=>{const ps=getMStyle(p);return`<span class="passenger-chip" style="background:${ps?.bg||'#f0f0f0'};color:${ps?.ac||'#333'};border-color:${ps?.ac||'#ccc'}">${p}</span>`;}).join('');
     card.innerHTML=`
       <div class="drive-card-top" style="${topBg}">
-        <div class="drive-card-label">${i===0?'🔜 다음 근무':i===1?'2번째':'3번째'}</div>
+        <div class="drive-card-label">${i===0?'🚨 D-DAY':i===1?'⏭ D-NEXT':'⏩ D-SOON'}</div>
         <div class="drive-card-date">${fmtDate(date)}</div>
         <div class="drive-card-dow">${getDow(date)}요일</div>
         <div class="dday">${dday}</div>
