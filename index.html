@@ -533,7 +533,7 @@ let apiUrl = localStorage.getItem(STORE_KEY) || '';
 //  HELPERS
 // ════════════════════════════════════
 function getMStyle(n){ for(const[k,v]of Object.entries(MEMBER_STYLE))if(n.includes(k))return v; return null; }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
+function todayStr(){ return new Date(new Date().toLocaleString('sv',{timeZone:'Asia/Seoul'})).toISOString().slice(0,10); }
 function toDate(s){ return new Date(s+'T00:00:00'); }
 function diffDays(s){ return Math.round((toDate(s)-new Date(new Date().toDateString()))/86400000); }
 function ymStr(s){ return s.slice(0,7); }
@@ -673,7 +673,7 @@ function renderAll(){
 function renderDashboard(){ renderNextCards(); renderAlerts(); renderStats(); }
 
 function renderNextCards(){
-  const up=geunmu().filter(r=>r[0]>=today).slice(0,3);
+  const up=geunmu().filter(r=>diffDays(r[0])>=0).slice(0,3);
   const grid=document.getElementById('next-grid'); grid.innerHTML='';
   if(!up.length){ grid.innerHTML='<div style="padding:20px;text-align:center;color:#999">예정된 근무일 없음</div>'; return; }
   up.forEach((row,i)=>{
@@ -708,7 +708,7 @@ function renderNextCards(){
 }
 
 function renderAlerts(){
-  const alerts=geunmu().filter(r=>r[0]>=today&&isAlert(r[7])).slice(0,6);
+  const alerts=geunmu().filter(r=>diffDays(r[0])>=0&&isAlert(r[7])).slice(0,6);
   const list=document.getElementById('alert-list');
   document.getElementById('alert-count').textContent=alerts.length?`${alerts.length}건`:'';
   if(!alerts.length){ list.innerHTML='<div class="no-alert">✅  향후 예정된 연가·출장·교환 없음</div>'; return; }
