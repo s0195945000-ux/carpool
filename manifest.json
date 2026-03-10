@@ -1,6 +1,6 @@
 {
-  "name": "당비비 카풀",
-  "short_name": "당비비 카풀",
+  "name": "영양 2팀 카풀",
+  "short_name": "영양 2팀 카풀",
   "description": "영양소방서 2팀 카풀 대시보드",
   "start_url": "/carpool/",
   "display": "standalone",
