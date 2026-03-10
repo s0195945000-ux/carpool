@@ -694,10 +694,13 @@ function renderNextCards(){
       </div>
       <div class="drive-card-body">
         <div class="driver-row">
-          <div class="driver-avatar" style="background:${st.bg};color:${st.ac}">${driver.slice(-1)}</div>
+          <div class="driver-avatar" style="background:${st.bg};color:${st.ac}">🚗</div>
           <div class="driver-info">
             <div class="name" style="color:${st.ac}">${driver}</div>
-            <div class="role">운전자 (주번)</div>
+            <div class="role" style="display:flex;align-items:center;gap:4px;">
+              <span style="background:${st.ac};color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;">주번</span>
+              <span style="font-size:10px;color:var(--muted)">운전자</span>
+            </div>
           </div>
         </div>
         <div class="passengers">${passHtml||'<span style="font-size:11px;color:#999">동승자 없음</span>'}</div>
