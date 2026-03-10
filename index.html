@@ -737,19 +737,24 @@ function renderAlerts(){
 function renderStats(){
   const curYm=today.slice(0,7);
   const mRows=geunmu().filter(r=>r[0].startsWith(curYm));
-  const total=geunmu().length;
-  document.getElementById('stats-title').textContent=`${curYm.slice(5)}월 운전 현황`;
+  const maxCnt = Math.max(...MEMBERS.map(m=>mRows.filter(r=>r[3].includes(m.key)).length), 1);
+  document.getElementById('stats-title').textContent=`${parseInt(curYm.slice(5))}월 운전 횟수`;
   const grid=document.getElementById('stats-grid'); grid.innerHTML='';
   MEMBERS.forEach(m=>{
     const mc=mRows.filter(r=>r[3].includes(m.key)).length;
-    const tc=geunmu().filter(r=>r[3].includes(m.key)).length;
-    const pct=total?Math.round(tc/total*100):0;
+    const pct=Math.round(mc/maxCnt*100);
     const st=MEMBER_STYLE[m.key];
+    const isMax=mc===maxCnt&&mc>0;
     const div=document.createElement('div'); div.className='stat-cell';
-    div.innerHTML=`<div class="stat-name" style="color:${st.ac}">${m.label}</div>
-      <div class="stat-num" style="color:${st.ac}">${mc}</div>
-      <div class="stat-sub">이번달 · 누적 ${tc}회</div>
-      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%;background:${st.ac}"></div></div>`;
+    div.style.position='relative';
+    div.innerHTML=`
+      ${isMax?`<div style="position:absolute;top:8px;right:10px;font-size:10px;font-weight:700;color:var(--today-a)">👑</div>`:''}
+      <div class="stat-name" style="color:${st.ac}">${m.label}</div>
+      <div class="stat-num" style="color:${st.ac};font-size:36px">${mc}</div>
+      <div class="stat-sub" style="font-size:11px;margin-top:2px">회</div>
+      <div class="stat-bar-wrap" style="margin-top:10px">
+        <div class="stat-bar" style="width:${pct}%;background:${st.ac}"></div>
+      </div>`;
     grid.appendChild(div);
   });
 }
