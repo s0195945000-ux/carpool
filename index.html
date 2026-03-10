@@ -232,6 +232,28 @@ body::before{content:'';position:fixed;inset:0;
   opacity:0;transition:all .3s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.error{background:#C62828;}
+
+/* ── BGM ── */
+.bgm-overlay{position:fixed;inset:0;background:rgba(13,33,55,.92);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  backdrop-filter:blur(8px);}
+.bgm-overlay h2{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.bgm-overlay p{font-size:14px;color:rgba(255,255,255,.6);}
+.bgm-start-btn{padding:16px 40px;border-radius:50px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#1976D2,#0D47A1);color:#fff;
+  font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;
+  box-shadow:0 8px 24px rgba(21,101,192,.5);transition:transform .2s;
+  animation:btnpulse 1.5s infinite;}
+.bgm-start-btn:hover{transform:scale(1.05);}
+@keyframes btnpulse{0%,100%{box-shadow:0 8px 24px rgba(21,101,192,.5);}
+  50%{box-shadow:0 8px 40px rgba(21,101,192,.9);}}
+.bgm-btn{position:fixed;bottom:24px;right:20px;z-index:1000;
+  width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.25);
+  font-size:20px;display:grid;place-items:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);transition:all .2s;}
+.bgm-btn:hover{background:rgba(255,255,255,.25);transform:scale(1.1);}
 </style>
 </head>
 <body>
@@ -435,6 +457,23 @@ body::before{content:'';position:fixed;inset:0;
   </div>
 </div>
 
+
+<!-- BGM 오버레이 -->
+<div class="bgm-overlay" id="bgm-overlay">
+  <div style="font-size:48px">🚗</div>
+  <h2>당비비 카풀</h2>
+  <p>영양소방서 2팀 · 구미 ↔ 영양</p>
+  <button class="bgm-start-btn" onclick="startApp()">▶ 시작하기</button>
+  <p style="font-size:12px;margin-top:-8px">🎵 들국화 - 그것만이 내 세상</p>
+</div>
+
+<!-- BGM 컨트롤 버튼 -->
+<button class="bgm-btn" id="bgm-btn" onclick="toggleBgm()" title="음악 재생/정지">🎵</button>
+
+<audio id="bgm-audio" loop>
+  <source src="bgm.mp3" type="audio/mpeg">
+</audio>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -619,7 +658,7 @@ function renderNextCards(){
     const passHtml=pass.map(p=>{const ps=getMStyle(p);return`<span class="passenger-chip" style="background:${ps?.bg||'#f0f0f0'};color:${ps?.ac||'#333'};border-color:${ps?.ac||'#ccc'}">${p}</span>`;}).join('');
     card.innerHTML=`
       <div class="drive-card-top" style="${topBg}">
-        <div class="drive-card-label">${i===0?'🔜 다음 근무':i===1?'🔜':'🔜'}</div>
+        <div class="drive-card-label">${i===0?'🔜 다음 근무':i===1?'2번째':'3번째'}</div>
         <div class="drive-card-date">${fmtDate(date)}</div>
         <div class="drive-card-dow">${getDow(date)}요일</div>
         <div class="dday">${dday}</div>
@@ -793,6 +832,29 @@ function showToast(msg, type=''){
   t.textContent=msg; t.className='toast'+(type?' '+type:'')+' show';
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+
+// ════════════════════════════════════
+//  BGM
+// ════════════════════════════════════
+const audio = document.getElementById('bgm-audio');
+const bgmBtn = document.getElementById('bgm-btn');
+
+function startApp() {
+  document.getElementById('bgm-overlay').style.display = 'none';
+  audio.volume = 0.4;
+  audio.play().catch(()=>{});
+}
+
+function toggleBgm() {
+  if (audio.paused) {
+    audio.play();
+    bgmBtn.textContent = '🎵';
+  } else {
+    audio.pause();
+    bgmBtn.textContent = '🔇';
+  }
 }
 
 // ════════════════════════════════════
