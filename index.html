@@ -275,6 +275,24 @@ body::before{content:'';position:fixed;inset:0;
 .weather-detail{font-size:11px;color:rgba(255,255,255,.6);}
 .weather-detail span{color:#fff;font-weight:700;}
 .weather-loading{font-size:13px;color:rgba(255,255,255,.5);}
+
+/* ── Edit Modal ── */
+.edit-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;
+  align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.edit-modal-bg.open{display:flex;}
+.edit-modal{background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 40px;
+  width:100%;max-width:540px;box-shadow:0 -8px 40px rgba(0,0,0,.3);}
+.edit-modal h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.edit-modal .edit-date{font-size:12px;color:var(--muted);margin-bottom:18px;font-family:'DM Mono',monospace;}
+.edit-field{margin-bottom:14px;}
+.edit-field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;}
+.edit-field input{width:100%;padding:10px 14px;border-radius:10px;
+  border:1.5px solid var(--border);font-family:'Noto Sans KR',sans-serif;
+  font-size:13px;color:var(--text);transition:border-color .15s;}
+.edit-field input:focus{outline:none;border-color:var(--blue);}
+.edit-modal-actions{display:flex;gap:10px;margin-top:20px;}
+.edit-modal-actions .btn{flex:1;padding:13px;font-size:14px;}
+.edit-saving{text-align:center;font-size:12px;color:var(--muted);margin-top:10px;}
 </style>
 </head>
 <body>
@@ -363,7 +381,7 @@ body::before{content:'';position:fixed;inset:0;
         <table class="sched-table">
           <thead><tr>
             <th>날짜</th><th>요일</th><th>근무구분</th>
-            <th>운전자</th><th>동승자</th><th>비고</th>
+            <th>운전자</th><th>동승자</th><th>비고</th><th></th>
           </tr></thead>
           <tbody id="sched-tbody"></tbody>
         </table>
@@ -510,6 +528,40 @@ body::before{content:'';position:fixed;inset:0;
   <source src="bgm.mp3" type="audio/mpeg">
 </audio>
 
+
+<!-- 수정 모달 -->
+<div class="edit-modal-bg" id="edit-modal-bg" onclick="closeEditModal(event)">
+  <div class="edit-modal">
+    <h3>✏️ 일정 수정</h3>
+    <div class="edit-date" id="edit-modal-date"></div>
+    <div class="edit-field">
+      <label>🚗 운전자</label>
+      <input type="text" id="edit-driver" placeholder="예: 위. 엄재일">
+    </div>
+    <div class="edit-field">
+      <label>👤 동승자 1</label>
+      <input type="text" id="edit-p1" placeholder="예: 교. 신동훈">
+    </div>
+    <div class="edit-field">
+      <label>👤 동승자 2</label>
+      <input type="text" id="edit-p2" placeholder="예: 사. 김준기">
+    </div>
+    <div class="edit-field">
+      <label>👤 동승자 3</label>
+      <input type="text" id="edit-p3" placeholder="예: 교. 이창현">
+    </div>
+    <div class="edit-field">
+      <label>📝 비고</label>
+      <input type="text" id="edit-note" placeholder="특이사항 입력">
+    </div>
+    <div class="edit-modal-actions">
+      <button class="btn btn-ghost" onclick="closeEditModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 저장 → 구글 시트 반영</button>
+    </div>
+    <div class="edit-saving" id="edit-saving"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -548,7 +600,8 @@ function fmtDate(s){ const d=toDate(s); return `${String(d.getMonth()+1).padStar
 function isAlert(n){ return ALERT_KW.some(k=>n.includes(k)); }
 const DOW=['일','월','화','수','목','금','토'];
 function getDow(s){ return DOW[toDate(s).getDay()]; }
-function geunmu(){ return RAW.filter(r=>r[2]==='근무'); }
+function geunmu(){ return RAW.filter(r=>r.data[2]==='근무'); }
+function rowData(r){ return r.data || r; } // 하위 호환
 const today = todayStr();
 
 // ════════════════════════════════════
@@ -618,7 +671,7 @@ async function fetchData(){
   try {
     const json = await fetchJsonp(apiUrl);
     if(!json.ok || !Array.isArray(json.data)) throw new Error('잘못된 응답 형식');
-    RAW = json.data;
+    RAW = json.data; // [{row, data:[...]}]
     localStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), data: RAW}));
     const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
     setSyncBadge('connected',`구글 시트 연동 중 · ${now} 업데이트`);
@@ -680,11 +733,11 @@ function renderAll(){
 function renderDashboard(){ renderNextCards(); renderAlerts(); renderStats(); }
 
 function renderNextCards(){
-  const up=geunmu().filter(r=>diffDays(r[0])>=0).slice(0,3);
+  const up=geunmu().filter(r=>diffDays((r.data||r)[0])>=0).slice(0,3);
   const grid=document.getElementById('next-grid'); grid.innerHTML='';
   if(!up.length){ grid.innerHTML='<div style="padding:20px;text-align:center;color:#999">예정된 근무일 없음</div>'; return; }
   up.forEach((row,i)=>{
-    const[date,dow,,driver,p1,p2,p3,note]=row;
+    const[date,dow,,driver,p1,p2,p3,note]=row.data||row;
     const diff=diffDays(date), dday=diff===0?'D-DAY':`D-${diff}`;
     const st=getMStyle(driver)||{bg:'#eee',ac:'#333'};
     const pass=[p1,p2,p3].filter(p=>p&&p!=='-');
@@ -718,7 +771,7 @@ function renderNextCards(){
 }
 
 function renderAlerts(){
-  const alerts=geunmu().filter(r=>diffDays(r[0])>=0&&isAlert(r[7])).slice(0,6);
+  const alerts=geunmu().filter(r=>diffDays((r.data||r)[0])>=0&&isAlert(r[7])).slice(0,6);
   const list=document.getElementById('alert-list');
   document.getElementById('alert-count').textContent=alerts.length?`${alerts.length}건`:'';
   if(!alerts.length){ list.innerHTML='<div class="no-alert">✅  향후 예정된 연가·출장·교환 없음</div>'; return; }
@@ -736,12 +789,12 @@ function renderAlerts(){
 
 function renderStats(){
   const curYm=today.slice(0,7);
-  const mRows=geunmu().filter(r=>r[0].startsWith(curYm));
+  const mRows=geunmu().filter(r=>(r.data||r)[0].startsWith(curYm));
   const maxCnt = Math.max(...MEMBERS.map(m=>mRows.filter(r=>r[3].includes(m.key)).length), 1);
   document.getElementById('stats-title').textContent=`${parseInt(curYm.slice(5))}월 운전 횟수`;
   const grid=document.getElementById('stats-grid'); grid.innerHTML='';
   MEMBERS.forEach(m=>{
-    const mc=mRows.filter(r=>r[3].includes(m.key)).length;
+    const mc=mRows.filter(r=>(r.data||r)[3].includes(m.key)).length;
     const pct=Math.round(mc/maxCnt*100);
     const st=MEMBER_STYLE[m.key];
     const isMax=mc===maxCnt&&mc>0;
@@ -767,11 +820,11 @@ function filterSched(f,btn){ schedFilter=f; document.querySelectorAll('.sched-ta
 
 function renderSchedTable(){
   let rows=RAW;
-  if(schedFilter==='geunmu') rows=rows.filter(r=>r[2]==='근무');
-  if(schedFilter==='alert') rows=rows.filter(r=>r[2]==='근무'&&isAlert(r[7]));
+  if(schedFilter==='geunmu') rows=rows.filter(r=>(r.data||r)[2]==='근무');
+  if(schedFilter==='alert') rows=rows.filter(r=>(r.data||r)[2]==='근무'&&isAlert((r.data||r)[7]));
   const tbody=document.getElementById('sched-tbody'); tbody.innerHTML='';
   rows.forEach(row=>{
-    const[date,dow,gm,driver,p1,p2,p3,note]=row;
+    const[date,dow,gm,driver,p1,p2,p3,note]=row.data||row;
     const isToday=date===today, isGeunmu=gm==='근무', hasAl=isAlert(note);
     const d=toDate(date), isWeekend=d.getDay()===0||d.getDay()===6;
     const cls=isToday?'is-today':hasAl&&isGeunmu?'has-alert':isGeunmu?'geunmu':isWeekend?'weekend':'bibeon';
@@ -797,7 +850,7 @@ let activeYm=today.slice(0,7);
 function renderMonthPage(){ renderMonthTabs(); renderMonthTable(); }
 
 function renderMonthTabs(){
-  const allYms=[...new Set(RAW.map(r=>ymStr(r[0])))].sort();
+  const allYms=[...new Set(RAW.map(r=>ymStr((r.data||r)[0])))].sort();
   if(!allYms.includes(activeYm)) activeYm=allYms[allYms.length-1]||activeYm;
   const tabs=document.getElementById('month-tabs'); tabs.innerHTML='';
   allYms.forEach(ym=>{
@@ -810,10 +863,10 @@ function renderMonthTabs(){
 }
 
 function renderMonthTable(){
-  const rows=RAW.filter(r=>ymStr(r[0])===activeYm&&r[2]==='근무');
+  const rows=RAW.filter(r=>ymStr((r.data||r)[0])===activeYm&&(r.data||r)[2]==='근무');
   const tbody=document.getElementById('month-tbody'); tbody.innerHTML='';
   rows.forEach(row=>{
-    const[date,dow,,driver,p1,p2,p3,note]=row;
+    const[date,dow,,driver,p1,p2,p3,note]=row.data||row;
     const isToday=date===today;
     const tr=document.createElement('tr'); if(isToday) tr.className='today-row';
     const dc=dow==='토'?'dow-sat':dow==='일'?'dow-sun':'';
@@ -879,6 +932,57 @@ function showToast(msg, type=''){
 }
 
 
+
+
+// ════════════════════════════════════
+//  EDIT MODAL
+// ════════════════════════════════════
+let editTarget = null;
+
+function openEditModal(row) {
+  const d = row.data || row;
+  editTarget = row;
+  document.getElementById('edit-modal-date').textContent = `${d[0]} (${d[1]}) · ${d[2]}`;
+  document.getElementById('edit-driver').value = d[3] !== '-' ? d[3] : '';
+  document.getElementById('edit-p1').value = d[4] !== '-' ? d[4] : '';
+  document.getElementById('edit-p2').value = d[5] !== '-' ? d[5] : '';
+  document.getElementById('edit-p3').value = d[6] !== '-' ? d[6] : '';
+  document.getElementById('edit-note').value = d[7] || '';
+  document.getElementById('edit-saving').textContent = '';
+  document.getElementById('edit-modal-bg').classList.add('open');
+}
+
+function closeEditModal(e) {
+  if (e && e.target !== document.getElementById('edit-modal-bg')) return;
+  document.getElementById('edit-modal-bg').classList.remove('open');
+}
+
+async function saveEdit() {
+  const saving = document.getElementById('edit-saving');
+  saving.textContent = '저장 중...';
+  const rowIdx = editTarget.row;
+  const driver = document.getElementById('edit-driver').value || '-';
+  const p1 = document.getElementById('edit-p1').value || '-';
+  const p2 = document.getElementById('edit-p2').value || '-';
+  const p3 = document.getElementById('edit-p3').value || '-';
+  const note = document.getElementById('edit-note').value || '';
+
+  try {
+    const params = new URLSearchParams({ action:'update', row:rowIdx, driver, p1, p2, p3, note });
+    const json = await fetchJsonp(apiUrl + '&' + params.toString());
+    if (!json.ok) throw new Error(json.error);
+
+    // 로컬 데이터도 즉시 업데이트
+    const d = editTarget.data || editTarget;
+    d[3] = driver; d[4] = p1; d[5] = p2; d[6] = p3; d[7] = note;
+    renderAll();
+    document.getElementById('edit-modal-bg').classList.remove('open');
+    showToast('✅ 구글 시트에 저장되었습니다!');
+  } catch(err) {
+    saving.textContent = '❌ 저장 실패: ' + err.message;
+    showToast('저장 실패: ' + err.message, 'error');
+  }
+}
 
 // ════════════════════════════════════
 //  WEATHER (영양읍)
