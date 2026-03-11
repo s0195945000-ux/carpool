@@ -138,7 +138,7 @@ body::before{content:'';position:fixed;inset:0;
   background:rgba(0,0,0,.1);border-radius:6px;padding:2px 7px;font-family:'DM Mono',monospace;}
 .drive-card-body{padding:10px 14px 14px;background:#fff;}
 .driver-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.driver-avatar{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;
+.driver-avatar{width:70px;height:42px;border-radius:10px;display:grid;place-items:center;
   font-size:14px;font-weight:900;flex-shrink:0;}
 .driver-info .name{font-size:14px;font-weight:700;}
 .driver-info .role{font-size:10px;color:var(--muted);}
@@ -572,10 +572,10 @@ const STORE_KEY = 'dangbibi_api_url';
 const CACHE_KEY = 'dangbibi_cache_v1';
 const ALERT_KW  = ['연가','출장','보강','공가','교환','차감'];
 const MEMBER_STYLE = {
-  '엄재일':{bg:'var(--eom-bg)',ac:'var(--eom-ac)'},
-  '신동훈':{bg:'var(--shin-bg)',ac:'var(--shin-ac)'},
-  '김준기':{bg:'var(--kim-bg)',ac:'var(--kim-ac)'},
-  '이창현':{bg:'var(--lee-bg)',ac:'var(--lee-ac)'},
+  '엄재일':{bg:'var(--eom-bg)',ac:'var(--eom-ac)',car:'🚙'},
+  '신동훈':{bg:'var(--shin-bg)',ac:'var(--shin-ac)',car:'🛻'},
+  '김준기':{bg:'var(--kim-bg)',ac:'var(--kim-ac)',car:'🚗'},
+  '이창현':{bg:'var(--lee-bg)',ac:'var(--lee-ac)',car:'🏎️'},
 };
 const MEMBERS = [
   {key:'엄재일',label:'위. 엄재일'},{key:'신동훈',label:'교. 신동훈'},
@@ -754,7 +754,9 @@ function renderNextCards(){
       </div>
       <div class="drive-card-body">
         <div class="driver-row">
-          <div class="driver-avatar" style="background:${st.bg};color:${st.ac}">🚗</div>
+          <div class="driver-avatar" style="background:${st.bg};color:${st.ac};overflow:hidden;padding:0;">
+          ${st.img ? `<img src="${st.img}" style="width:100%;height:100%;object-fit:contain;object-position:center;">` : `<span style="font-size:18px">${st.car||'🚗'}</span>`}
+        </div>
           <div class="driver-info">
             <div class="name" style="color:${st.ac}">${driver}</div>
             <div class="role" style="display:flex;align-items:center;gap:4px;">
@@ -802,6 +804,7 @@ function renderStats(){
     div.style.position='relative';
     div.innerHTML=`
       ${isMax?`<div style="position:absolute;top:8px;right:10px;font-size:10px;font-weight:700;color:var(--today-a)">👑</div>`:''}
+      ${st.img ? `<img src="${st.img}" style="width:100%;height:36px;object-fit:contain;margin-bottom:4px;">` : `<div style="font-size:20px;margin-bottom:4px">${st.car||'🚗'}</div>`}
       <div class="stat-name" style="color:${st.ac}">${m.label}</div>
       <div class="stat-num" style="color:${st.ac};font-size:36px">${mc}</div>
       <div class="stat-sub" style="font-size:11px;margin-top:2px">회</div>
