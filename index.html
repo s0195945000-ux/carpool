@@ -98,7 +98,7 @@ body::before{content:'';position:fixed;inset:0;
   background:rgba(0,0,0,.1);border-radius:6px;padding:2px 7px;font-family:'DM Mono',monospace;}
 .drive-card-body{padding:10px 14px 14px;background:#fff;}
 .driver-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.car-img-wrap{width:70px;height:42px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;overflow:hidden;}
+.car-img-wrap{width:70px;height:42px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;overflow:hidden;background:#fff;}
 .car-img{width:100%;height:100%;object-fit:contain;}
 .car-emoji{width:70px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:22px;flex-shrink:0;}
 .driver-info .name{font-size:14px;font-weight:700;}
@@ -123,7 +123,7 @@ body::before{content:'';position:fixed;inset:0;
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
 @media(max-width:500px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
 .stat-cell{padding:16px 10px;background:#fff;text-align:center;position:relative;}
-.stat-car-wrap{width:100%;border-radius:10px;padding:4px;margin-bottom:4px;}
+.stat-car-wrap{width:100%;border-radius:10px;padding:4px;margin-bottom:4px;background:#fff;}
 .stat-car{width:100%;height:34px;object-fit:contain;display:block;}
 .stat-name{font-size:11px;font-weight:700;margin-bottom:4px;}
 .stat-num{font-size:32px;font-weight:900;line-height:1;font-family:'DM Mono',monospace;}
@@ -767,38 +767,94 @@ function renderStats() {
 function filterSched(f,btn) {
   schedFilter=f;
   document.querySelectorAll('.sched-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); renderSchedTable();
+  btn.classList.add('active');
+  renderSchedTable();
 }
+
 function renderSchedTable() {
   let rows = RAW;
   if(schedFilter==='geunmu') rows=rows.filter(r=>r[2]==='근무');
-  if(schedFilter==='alert') rows=rows.filter(r=>r[2]==='근무'&&isAlert(r[7]));
-  const tbody = document.getElementById('sched-tbody'); tbody.innerHTML='';
+  if(schedFilter==='alert')  rows=rows.filter(r=>r[2]==='근무'&&isAlert(r[7]));
+
+  const tbody = document.getElementById('sched-tbody');
+  tbody.innerHTML = '';
   const today = todayStr();
-  rows.forEach(row=>{
+
+  rows.forEach(row => {
     const [date,dow,gm,driver,p1,p2,p3,note] = row;
-    const isToday=date===today, isGeunmu=gm==='근무', hasAl=isAlert(note);
-    const d=new Date(date+'T00:00:00'), isWe=d.getDay()===0||d.getDay()===6;
-    const cls=isToday?'is-today':hasAl&&isGeunmu?'has-alert':isGeunmu?'geunmu':isWe?'weekend':'';
-    const dc=dow==='토'?'dow-sat':dow==='일'?'dow-sun':'';
-    const gmB=isGeunmu?'<span class="gm-badge gm-geunmu">근무</span>':'<span class="gm-badge gm-bibeon">비번</span>';
-    let dHtml='-';
-    if(isGeunmu&&driver!=='-'){const st=getMStyle(driver);dHtml='<span class="driver-chip" style="background:'+(st?st.bg:'#eee')+';color:'+(st?st.ac:'#333')+'">'+ driver+'</span>';}
-    const pass=[p1,p2,p3].filter(p=>p&&p!=='-');
-    const pHtml='<span style="display:flex;flex-wrap:wrap;gap:3px">'+pass.map(p=>{const st=getMStyle(p);return'<span class="pass-chip" style="background:'+(st?st.bg:'#eee')+';color:'+(st?st.ac:'#333')+'">'+ p+'</span>';}).join('')+'</span>';
-    const nHtml=note&&note!=='-'&&note!==''?'<span style="font-size:11px;color:'+(hasAl?'var(--alert-a)':'var(--muted)')+'">'+(hasAl?'⚠️ ':'')+ note+'</span>':'';
-    const editBtn=isGeunmu?'<button onclick="openEdit('+JSON.stringify(row).replace(/"/g,'&quot;')+')" style="padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:11px;">✏️</button>':'';
-    const tr=document.createElement('tr'); tr.className=cls;
-    const dateCell = `${date}${isToday?'<span class="today-mark">TODAY</span>':''}`
-      + (nHtml&&isGeunmu ? `<br><span style="font-size:10px;color:${hasAl?'var(--alert-a)':'var(--muted)'}">${nHtml}</span>` : '');
-    tr.innerHTML=`<td class="date-cell">${dateCell}</td>
-      <td class="${dc}">${dow}</td><td>${gmB}</td><td>${dHtml}</td>
-      <td>${isGeunmu?pHtml:''}</td><td>${editBtn}</td>`;
+    const isToday  = date === today;
+    const isGeunmu = gm === '근무';
+    const hasAl    = isAlert(note);
+    const d        = new Date(date+'T00:00:00');
+    const isWe     = d.getDay()===0 || d.getDay()===6;
+
+    // 행 배경색 결정
+    let rowBg = '';
+    if(isToday)              rowBg = 'background:#FFF0F5;';
+    else if(hasAl&&isGeunmu) rowBg = 'background:#FFF3E0;';
+    else if(isGeunmu)        rowBg = 'background:#F8E8FF;';
+    else if(isWe)            rowBg = 'background:#FAFAFA;';
+
+    // 요일 색
+    const dowColor = dow==='토'?'color:#1565C0;font-weight:700':dow==='일'?'color:#C62828;font-weight:700':'';
+
+    // 근무 뱃지
+    const gmBadge = isGeunmu
+      ? '<span style="display:inline-block;padding:2px 6px;border-radius:5px;font-size:11px;font-weight:700;background:#7B2D8B;color:#fff">근무</span>'
+      : '<span style="display:inline-block;padding:2px 6px;border-radius:5px;font-size:11px;font-weight:700;background:#E0E0E0;color:#757575">비번</span>';
+
+    // 운전자 칩
+    let driverHtml = '<span style="color:#aaa;font-size:12px">—</span>';
+    if(isGeunmu && driver && driver!=='-') {
+      const st = getMStyle(driver)||{bg:'#eee',ac:'#333'};
+      driverHtml = '<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:'+st.bg+';color:'+st.ac+'">'+driver+'</span>';
+    }
+
+    // 동승자 칩들
+    let passHtml = '';
+    if(isGeunmu) {
+      [p1,p2,p3].filter(p=>p&&p!=='-').forEach(p=>{
+        const st = getMStyle(p)||{bg:'#f0f0f0',ac:'#555'};
+        passHtml += '<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;background:'+st.bg+';color:'+st.ac+';border:1px solid '+st.ac+'40;margin:1px">'+p+'</span>';
+      });
+    }
+
+    // 수정 버튼
+    const editBtn = isGeunmu
+      ? '<button onclick='openEdit('+JSON.stringify(row).replace(/'/g,"\'")+')'style="padding:3px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:11px">✏️</button>'
+      : '';
+
+    const tdStyle = 'padding:8px 10px;vertical-align:middle;border-bottom:1px solid #eee;';
+    const todayMark = isToday ? '<span style="font-size:9px;font-weight:900;color:#D81B60;background:#FFE0EE;padding:1px 5px;border-radius:4px;margin-left:4px">TODAY</span>' : '';
+
+    // 메인 행
+    const tr = document.createElement('tr');
+    tr.setAttribute('style', rowBg);
+    tr.innerHTML =
+      '<td style="'+tdStyle+'font-family:DM Mono,monospace;font-size:12px;white-space:nowrap">'+date.slice(5)+todayMark+'</td>'+
+      '<td style="'+tdStyle+'text-align:center;'+dowColor+'">'+dow+'</td>'+
+      '<td style="'+tdStyle+'text-align:center">'+gmBadge+'</td>'+
+      '<td style="'+tdStyle+'">'+driverHtml+'</td>'+
+      '<td style="'+tdStyle+'">'+passHtml+'</td>'+
+      '<td style="'+tdStyle+'text-align:center">'+editBtn+'</td>';
     tbody.appendChild(tr);
+
+    // 비고 행 (모든 칸 병합)
+    if(note && note!=='' && note!=='-') {
+      const nr = document.createElement('tr');
+      nr.setAttribute('style', rowBg);
+      const noteColor = hasAl ? '#E65100' : '#8B6FA8';
+      const notePrefix = hasAl ? '⚠️ ' : '💬 ';
+      nr.innerHTML =
+        '<td colspan="6" style="padding:2px 14px 10px 28px;font-size:11px;line-height:1.5;color:'+noteColor+';border-bottom:2px solid #e8d5f5">'+
+        notePrefix+note+'</td>';
+      tbody.appendChild(nr);
+    }
   });
 }
 
 // 월별
+function renderMonth// 월별
 function renderMonth() {
   const allYms = [...new Set(RAW.map(r=>ymStr(r[0])))].sort();
   if(!activeYm||!allYms.includes(activeYm)) activeYm=todayStr().slice(0,7);
