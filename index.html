@@ -14,20 +14,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#0D2137;--blue:#1565C0;--blue2:#1976D2;--sky:#E3F2FD;
-  --white:#fff;--off:#F8FAFC;--border:#E2E8F0;--text:#1E293B;--muted:#64748B;
-  --today:#FFF8E1;--today-a:#F57F17;--alert:#FFF3E0;--alert-a:#E65100;
+  --navy:#3D1A6E;--blue:#7B2D8B;--blue2:#9C4DB8;--sky:#F8E8FF;
+  --white:#fff;--off:#FDF6FF;--border:#E8D5F5;--text:#2D1052;--muted:#8B6FA8;
+  --today:#FFF0F5;--today-a:#D81B60;--alert:#FFF3E0;--alert-a:#E65100;
   --eom-bg:#BBDEFB;--eom-ac:#1565C0;
   --shin-bg:#C8E6C9;--shin-ac:#2E7D32;
   --kim-bg:#FFCDD2;--kim-ac:#C62828;
   --lee-bg:#E1BEE7;--lee-ac:#6A1B9A;
   --radius:18px;
+  --spring1:#FF8FAB;--spring2:#FFB3C6;--spring3:#FFCFE8;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;}
+body{font-family:'Noto Sans KR',sans-serif;background:linear-gradient(160deg,#2D0A5E 0%,#4A1080 40%,#7B2D8B 100%);color:var(--text);min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;
-  background:radial-gradient(ellipse at 20% 20%,rgba(21,101,192,.22) 0%,transparent 60%);
+  background:
+    radial-gradient(ellipse at 10% 15%,rgba(255,143,171,.18) 0%,transparent 50%),
+    radial-gradient(ellipse at 90% 10%,rgba(255,179,198,.15) 0%,transparent 45%),
+    radial-gradient(ellipse at 50% 90%,rgba(156,77,184,.12) 0%,transparent 55%);
   pointer-events:none;z-index:0;}
+/* 벚꽃 파티클 */
+.petal{position:fixed;top:-20px;font-size:16px;animation:fall linear infinite;pointer-events:none;z-index:0;opacity:.7;}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:.8;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
 .app{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px 80px;}
 .nav{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;padding-bottom:2px;}
 .nav-btn{flex-shrink:0;padding:9px 18px;border-radius:30px;border:none;cursor:pointer;
@@ -91,7 +98,7 @@ body::before{content:'';position:fixed;inset:0;
   background:rgba(0,0,0,.1);border-radius:6px;padding:2px 7px;font-family:'DM Mono',monospace;}
 .drive-card-body{padding:10px 14px 14px;background:#fff;}
 .driver-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.car-img{width:70px;height:42px;border-radius:10px;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;background:transparent;}
+.car-img{width:70px;height:42px;border-radius:10px;object-fit:contain;flex-shrink:0;}
 .car-emoji{width:70px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:22px;flex-shrink:0;}
 .driver-info .name{font-size:14px;font-weight:700;}
 .driver-info .role{display:flex;align-items:center;gap:4px;margin-top:2px;}
@@ -115,7 +122,7 @@ body::before{content:'';position:fixed;inset:0;
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
 @media(max-width:500px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
 .stat-cell{padding:16px 10px;background:#fff;text-align:center;position:relative;}
-.stat-car{width:100%;height:34px;object-fit:contain;margin-bottom:4px;mix-blend-mode:multiply;}
+.stat-car{width:100%;height:34px;object-fit:contain;margin-bottom:4px;}
 .stat-name{font-size:11px;font-weight:700;margin-bottom:4px;}
 .stat-num{font-size:32px;font-weight:900;line-height:1;font-family:'DM Mono',monospace;}
 .stat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
@@ -222,6 +229,21 @@ body::before{content:'';position:fixed;inset:0;
   background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
   border:1px solid rgba(255,255,255,.25);font-size:20px;
   display:grid;place-items:center;box-shadow:0 4px 16px rgba(0,0,0,.3);}
+/* 시작 오버레이 */
+.start-overlay{position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(160deg,#2D0A5E 0%,#4A1080 40%,#7B2D8B 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+.start-overlay .ov-icon{font-size:80px;animation:bounce 1.5s ease-in-out infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+.start-overlay h2{font-size:26px;font-weight:900;color:#fff;text-align:center;}
+.start-overlay p{font-size:14px;color:rgba(255,255,255,.6);text-align:center;}
+.start-btn{padding:16px 48px;border-radius:50px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#FF8FAB,#C2185B);color:#fff;
+  font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;
+  box-shadow:0 8px 32px rgba(255,143,171,.5);
+  animation:glow 2s ease-in-out infinite;}
+@keyframes glow{0%,100%{box-shadow:0 8px 32px rgba(255,143,171,.5);}50%{box-shadow:0 8px 48px rgba(255,143,171,.9);}}
+.petals-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
 /* Toast */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
   background:var(--navy);color:#fff;padding:12px 24px;border-radius:12px;
@@ -231,6 +253,13 @@ body::before{content:'';position:fixed;inset:0;
 </style>
 </head>
 <body>
+<div class="start-overlay" id="start-overlay">
+  <div class="petals-bg" id="overlay-petals"></div>
+  <div class="ov-icon">🌸</div>
+  <h2>당비비 카풀</h2>
+  <p>영양소방서 2팀 · 구미 ↔ 영양</p>
+  <button class="start-btn" onclick="startApp()">🚗 시작하기</button>
+</div>
 <div class="app">
   <div class="header">
     <div class="header-icon">🚗</div>
@@ -304,7 +333,7 @@ body::before{content:'';position:fixed;inset:0;
       <div class="sched-wrap">
         <table class="sched-table">
           <thead><tr>
-            <th>날짜</th><th>요일</th><th>근무</th>
+            <th>날짜·요일·근무</th>
             <th>운전자</th><th>동승자</th><th></th>
           </tr></thead>
           <tbody id="sched-tbody"></tbody>
@@ -541,7 +570,7 @@ function fetchJsonp(url) {
     s.id = cb; s.src = url+'?callback='+cb;
     s.onerror = () => reject(new Error('네트워크 오류'));
     document.head.appendChild(s);
-    setTimeout(()=>reject(new Error('시간 초과')),10000);
+    setTimeout(()=>{ delete window[cb]; reject(new Error('시간 초과')); },30000);
   });
 }
 
@@ -644,6 +673,11 @@ function renderNextCards() {
     const carHtml = carImg
       ? '<img class="car-img" src="'+carImg+'" alt="">' 
       : '<div class="car-emoji" style="background:'+st.bg+';color:'+st.ac+'">🚗</div>';
+    // car img background
+    const carImgStyle = carImg ? 'style="background:'+st.bg+'"' : '';
+    const carHtmlStyled = carImg
+      ? '<img class="car-img" src="'+carImg+'" alt="" style="background:'+st.bg+'">'
+      : '<div class="car-emoji" style="background:'+st.bg+';color:'+st.ac+'">🚗</div>';
     card.innerHTML = `
       <div class="drive-card-top" style="${topStyle}">
         <div class="drive-card-label">${labels[i]||''}</div>
@@ -653,7 +687,7 @@ function renderNextCards() {
       </div>
       <div class="drive-card-body">
         <div class="driver-row">
-          ${carHtml}
+          ${carHtmlStyled}
           <div class="driver-info">
             <div class="name" style="color:${st.ac}">${driver}</div>
             <div class="role">
@@ -714,7 +748,7 @@ function renderStats() {
     const div = document.createElement('div'); div.className='stat-cell';
     div.innerHTML = `
       ${isMax?'<div class="crown">👑</div>':''}
-      ${carImg?'<img class="stat-car" src="'+carImg+'" alt="">':'<div style="font-size:20px;margin-bottom:4px">🚗</div>'}
+      ${carImg?'<img class="stat-car" src="'+carImg+'" alt="" style="background:'+st.bg+';border-radius:8px;padding:2px">':'<div style="font-size:20px;margin-bottom:4px">🚗</div>'}
       <div class="stat-name" style="color:${st.ac}">${m.label}</div>
       <div class="stat-num" style="color:${st.ac}">${mc}</div>
       <div class="stat-sub">회</div>
@@ -833,9 +867,9 @@ async function saveEdit() {
   const p3=document.getElementById('ed-p3').value||'-';
   const note=document.getElementById('ed-note').value||'';
   try {
-    const params=new URLSearchParams({action:'update',row:editTarget._row,driver,p1,p2,p3,note});
-    const sep = apiUrl.includes('?')?'&':'?';
-    const json=await fetchJsonp(apiUrl+sep+params.toString());
+    const params=new URLSearchParams({row:editTarget._row,driver,p1,p2,p3,note});
+    const updateUrl = apiUrl + (apiUrl.includes('?')?'&':'?') + 'action=update&' + params.toString();
+    const json=await fetchJsonp(updateUrl);
     if(!json.ok) throw new Error(json.error);
     editTarget[3]=driver;editTarget[4]=p1;editTarget[5]=p2;editTarget[6]=p3;editTarget[7]=note;
     renderAll();
@@ -852,10 +886,7 @@ function toggleBgm(){
   if(audio.paused){audio.volume=0.4;audio.play().catch(()=>{});document.getElementById('bgm-btn').textContent='🎵';}
   else{audio.pause();document.getElementById('bgm-btn').textContent='🔇';}
 }
-document.addEventListener('click',function startBgm(){
-  try{audio.volume=0.4;audio.play().catch(()=>{});}catch(e){}
-  document.removeEventListener('click',startBgm);
-},{once:true});
+// BGM은 시작하기 버튼에서 재생
 
 // 코드 복사
 function copyScript(){
@@ -870,11 +901,31 @@ function showToast(msg,type=''){
   clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500);
 }
 
+function startApp() {
+  document.getElementById('start-overlay').style.display='none';
+  try { audio.volume=0.4; audio.play().catch(()=>{}); } catch(e){}
+  if(apiUrl) fetchData(); else { loadCache(); setSyncBadge('disconnected','미연결 — ⚙️ 설정 필요'); }
+}
+
+// 오버레이 벚꽃
+(function(){
+  const cont=document.getElementById('overlay-petals');
+  if(!cont) return;
+  const petals=['🌸','🌺','🌼','🌷'];
+  for(let i=0;i<15;i++){
+    const p=document.createElement('div'); p.className='petal';
+    p.textContent=petals[i%4];
+    p.style.left=Math.random()*100+'vw';
+    p.style.animationDuration=(3+Math.random()*4)+'s';
+    p.style.animationDelay=(Math.random()*5)+'s';
+    p.style.fontSize=(12+Math.random()*16)+'px';
+    cont.appendChild(p);
+  }
+})();
+
 // INIT
 if(apiUrl) document.getElementById('api-url-input').value=apiUrl;
-loadCache();
-if(apiUrl) fetchData();
-else setSyncBadge('disconnected','미연결 — ⚙️ 설정 필요');
+loadCache(); // 캐시 미리 표시
 setInterval(()=>{if(apiUrl)fetchData();},5*60*1000);
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
