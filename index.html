@@ -764,6 +764,11 @@ function renderStats() {
 }
 
 // 전체 일정
+function openEditByIdx(btn) {
+  const i = parseInt(btn.getAttribute('data-ei'));
+  if(window._schedRows && window._schedRows[i]) openEdit(window._schedRows[i]);
+}
+
 function filterSched(f,btn) {
   schedFilter=f;
   document.querySelectorAll('.sched-tab').forEach(b=>b.classList.remove('active'));
@@ -776,6 +781,7 @@ function renderSchedTable() {
   if(schedFilter==='geunmu') rows=rows.filter(r=>r[2]==='근무');
   if(schedFilter==='alert')  rows=rows.filter(r=>r[2]==='근무'&&isAlert(r[7]));
 
+  window._schedRows = [];
   const tbody = document.getElementById('sched-tbody');
   tbody.innerHTML = '';
   const today = todayStr();
