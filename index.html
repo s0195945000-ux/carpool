@@ -240,20 +240,6 @@ body::before{content:'';position:fixed;inset:0;
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.error{background:#C62828;}
 
-/* ── BGM ── */
-.bgm-overlay{position:fixed;inset:0;background:rgba(13,33,55,.92);z-index:9999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-  backdrop-filter:blur(8px);}
-.bgm-overlay h2{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;}
-.bgm-overlay p{font-size:14px;color:rgba(255,255,255,.6);}
-.bgm-start-btn{padding:16px 40px;border-radius:50px;border:none;cursor:pointer;
-  background:linear-gradient(135deg,#1976D2,#0D47A1);color:#fff;
-  font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;
-  box-shadow:0 8px 24px rgba(21,101,192,.5);transition:transform .2s;
-  animation:btnpulse 1.5s infinite;}
-.bgm-start-btn:hover{transform:scale(1.05);}
-@keyframes btnpulse{0%,100%{box-shadow:0 8px 24px rgba(21,101,192,.5);}
-  50%{box-shadow:0 8px 40px rgba(21,101,192,.9);}}
 .bgm-btn{position:fixed;bottom:24px;right:20px;z-index:1000;
   width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;
   background:rgba(255,255,255,.15);backdrop-filter:blur(8px);
@@ -512,9 +498,6 @@ body::before{content:'';position:fixed;inset:0;
 </div>
 
 
-<!-- BGM 오버레이 -->
-<div class="bgm-overlay" id="bgm-overlay">
-  <div style="font-size:48px">🚗</div>
   <h2>당비비 카풀</h2>
   <p>영양소방서 2팀 · 구미 ↔ 영양</p>
   <button class="bgm-start-btn" onclick="startApp()">▶ 시작하기</button>
@@ -1052,12 +1035,7 @@ setInterval(fetchWeather, 30 * 60 * 1000); // 30분마다 갱신
 const audio = document.getElementById('bgm-audio');
 const bgmBtn = document.getElementById('bgm-btn');
 
-function startApp() {
-  document.getElementById('bgm-overlay').style.display = 'none';
-  try { audio.volume = 0.4; audio.play().catch(()=>{}); } catch(e) {}
-  // 데이터 로드
-  if(apiUrl) fetchData(); else loadCache();
-}
+function startApp() {}
 
 function toggleBgm() {
   if (audio.paused) {
@@ -1077,8 +1055,15 @@ if(apiUrl){
 } else {
   setSyncBadge('disconnected','미연결 — ⚙️ 설정 필요');
 }
-// 캐시 데이터는 미리 표시
+// 캐시 데이터 미리 표시
 loadCache();
+if(apiUrl) fetchData();
+
+// 첫 터치시 BGM 재생
+document.addEventListener('click', function startBgm() {
+  try { audio.volume = 0.4; audio.play().catch(()=>{}); } catch(e) {}
+  document.removeEventListener('click', startBgm);
+}, { once: true });
 
 // 5분마다 자동 새로고침
 setInterval(()=>{ if(apiUrl) fetchData(); }, 5*60*1000);
