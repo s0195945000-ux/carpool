@@ -597,13 +597,13 @@ let apiUrl = localStorage.getItem(STORE_KEY) || '';
 // ════════════════════════════════════
 //  HELPERS
 // ════════════════════════════════════
-function getMStyle(n){ for(const[k,v]of Object.entries(MEMBER_STYLE))if(n.includes(k))return v; return null; }
+function getMStyle(n){ if(!n) return null; for(const[k,v]of Object.entries(MEMBER_STYLE))if(n.includes(k))return v; return null; }
 function todayStr(){ return new Date(new Date().toLocaleString('sv',{timeZone:'Asia/Seoul'})).toISOString().slice(0,10); }
 function toDate(s){ return new Date(s+'T00:00:00'); }
 function diffDays(s){ return Math.round((toDate(s)-new Date(new Date().toDateString()))/86400000); }
 function ymStr(s){ return s.slice(0,7); }
 function fmtDate(s){ const d=toDate(s); return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; }
-function isAlert(n){ return ALERT_KW.some(k=>n.includes(k)); }
+function isAlert(n){ return !!n && ALERT_KW.some(k=>n.includes(k)); }
 const DOW=['일','월','화','수','목','금','토'];
 function getDow(s){ return DOW[toDate(s).getDay()]; }
 function geunmu(){ return RAW.filter(r=>r[2]==='근무'); }
@@ -799,7 +799,7 @@ function renderAlerts(){
   list.innerHTML='';
   alerts.forEach(row=>{
     const[date,,,,,,,note]=row;
-    const tags=ALERT_KW.filter(k=>note.includes(k));
+    const tags=note?ALERT_KW.filter(k=>note.includes(k)):[];
     const div=document.createElement('div'); div.className='alert-item';
     div.innerHTML=`<div class="alert-date">${fmtDate(date)} (${getDow(date)})</div>
       <div class="alert-tags">${tags.map(t=>`<span class="alert-tag">${t}</span>`).join('')}</div>
@@ -811,11 +811,11 @@ function renderAlerts(){
 function renderStats(){
   const curYm=today.slice(0,7);
   const mRows=geunmu().filter(r=>r[0].startsWith(curYm));
-  const maxCnt = Math.max(...MEMBERS.map(m=>mRows.filter(r=>r[3].includes(m.key)).length), 1);
+  const maxCnt = Math.max(...MEMBERS.map(m=>mRows.filter(r=>r[3]&&r[3].includes(m.key)).length), 1);
   document.getElementById('stats-title').textContent=`${parseInt(curYm.slice(5))}월 운전 횟수`;
   const grid=document.getElementById('stats-grid'); grid.innerHTML='';
   MEMBERS.forEach(m=>{
-    const mc=mRows.filter(r=>r[3].includes(m.key)).length;
+    const mc=mRows.filter(r=>r[3]&&r[3].includes(m.key)).length;
     const pct=Math.round(mc/maxCnt*100);
     const st=MEMBER_STYLE[m.key];
     const isMax=mc===maxCnt&&mc>0;
@@ -893,7 +893,7 @@ function renderMonthTable(){
     const tr=document.createElement('tr'); if(isToday) tr.className='today-row';
     const dc=dow==='토'?'dow-sat':dow==='일'?'dow-sun':'';
     const cells=MEMBERS.map(m=>{
-      const isDr=driver.includes(m.key), isP=[p1,p2,p3].some(p=>p.includes(m.key));
+      const isDr=driver&&driver.includes(m.key), isP=[p1,p2,p3].some(p=>p&&p.includes(m.key));
       const st=MEMBER_STYLE[m.key];
       if(isDr) return`<td><span class="count-pill" style="background:${st.bg};color:${st.ac}">🚗 운전</span></td>`;
       if(isP)  return`<td><span class="count-pill" style="background:${st.bg};color:${st.ac};opacity:.7">동승</span></td>`;
