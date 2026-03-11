@@ -606,8 +606,7 @@ function fmtDate(s){ const d=toDate(s); return `${String(d.getMonth()+1).padStar
 function isAlert(n){ return ALERT_KW.some(k=>n.includes(k)); }
 const DOW=['일','월','화','수','목','금','토'];
 function getDow(s){ return DOW[toDate(s).getDay()]; }
-function geunmu(){ return RAW.filter(r=>r.data[2]==='근무'); }
-function rowData(r){ return r.data || r; } // 하위 호환
+function geunmu(){ return RAW.filter(r=>r[2]==='근무'); }
 const today = todayStr();
 
 // ════════════════════════════════════
@@ -677,7 +676,12 @@ async function fetchData(){
   try {
     const json = await fetchJsonp(apiUrl);
     if(!json.ok || !Array.isArray(json.data)) throw new Error('잘못된 응답 형식');
-    RAW = json.data; // [{row, data:[...]}]
+    // row 인덱스 보존하면서 flat 배열로 정규화
+    RAW = json.data.map(item => {
+      const arr = item.data || item;
+      arr._row = item.row; // 수정용 row 인덱스 보존
+      return arr;
+    });
     localStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), data: RAW}));
     const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
     setSyncBadge('connected',`구글 시트 연동 중 · ${now} 업데이트`);
@@ -739,11 +743,11 @@ function renderAll(){
 function renderDashboard(){ renderNextCards(); renderAlerts(); renderStats(); }
 
 function renderNextCards(){
-  const up=geunmu().filter(r=>diffDays((r.data||r)[0])>=0).slice(0,3);
+  const up=geunmu().filter(r=>diffDays(r[0])>=0).slice(0,3);
   const grid=document.getElementById('next-grid'); grid.innerHTML='';
   if(!up.length){ grid.innerHTML='<div style="padding:20px;text-align:center;color:#999">예정된 근무일 없음</div>'; return; }
   up.forEach((row,i)=>{
-    const[date,dow,,driver,p1,p2,p3,note]=row.data||row;
+    const[date,dow,,driver,p1,p2,p3,note]=row;
     const diff=diffDays(date), dday=diff===0?'D-DAY':`D-${diff}`;
     const st=getMStyle(driver)||{bg:'#eee',ac:'#333'};
     const pass=[p1,p2,p3].filter(p=>p&&p!=='-');
@@ -760,7 +764,7 @@ function renderNextCards(){
       </div>
       <div class="drive-card-body">
         <div class="driver-row">
-          <div class="driver-avatar" style="background:${st.bg};color:${st.ac};overflow:hidden;padding:0;" id="av_${driver}">
+          <div class="driver-avatar" style="background:${st.bg};color:${st.ac};overflow:hidden;padding:0;" id="av_${driver.replace(/[^가-힣a-zA-Z]/g,\"\")}">
           <span style="font-size:18px">${st.car||'🚗'}</span>
         </div>
           <div class="driver-info">
@@ -788,7 +792,7 @@ function renderNextCards(){
 }
 
 function renderAlerts(){
-  const alerts=geunmu().filter(r=>diffDays((r.data||r)[0])>=0&&isAlert(r[7])).slice(0,6);
+  const alerts=geunmu().filter(r=>diffDays(r[0])>=0&&isAlert(r[7])).slice(0,6);
   const list=document.getElementById('alert-list');
   document.getElementById('alert-count').textContent=alerts.length?`${alerts.length}건`:'';
   if(!alerts.length){ list.innerHTML='<div class="no-alert">✅  향후 예정된 연가·출장·교환 없음</div>'; return; }
@@ -806,12 +810,12 @@ function renderAlerts(){
 
 function renderStats(){
   const curYm=today.slice(0,7);
-  const mRows=geunmu().filter(r=>(r.data||r)[0].startsWith(curYm));
+  const mRows=geunmu().filter(r=>r[0].startsWith(curYm));
   const maxCnt = Math.max(...MEMBERS.map(m=>mRows.filter(r=>r[3].includes(m.key)).length), 1);
   document.getElementById('stats-title').textContent=`${parseInt(curYm.slice(5))}월 운전 횟수`;
   const grid=document.getElementById('stats-grid'); grid.innerHTML='';
   MEMBERS.forEach(m=>{
-    const mc=mRows.filter(r=>(r.data||r)[3].includes(m.key)).length;
+    const mc=mRows.filter(r=>r[3].includes(m.key)).length;
     const pct=Math.round(mc/maxCnt*100);
     const st=MEMBER_STYLE[m.key];
     const isMax=mc===maxCnt&&mc>0;
@@ -838,11 +842,11 @@ function filterSched(f,btn){ schedFilter=f; document.querySelectorAll('.sched-ta
 
 function renderSchedTable(){
   let rows=RAW;
-  if(schedFilter==='geunmu') rows=rows.filter(r=>(r.data||r)[2]==='근무');
-  if(schedFilter==='alert') rows=rows.filter(r=>(r.data||r)[2]==='근무'&&isAlert((r.data||r)[7]));
+  if(schedFilter==='geunmu') rows=rows.filter(r=>r[2]==='근무');
+  if(schedFilter==='alert') rows=rows.filter(r=>r[2]==='근무'&&isAlert(r[7]));
   const tbody=document.getElementById('sched-tbody'); tbody.innerHTML='';
   rows.forEach(row=>{
-    const[date,dow,gm,driver,p1,p2,p3,note]=row.data||row;
+    const[date,dow,gm,driver,p1,p2,p3,note]=row;
     const isToday=date===today, isGeunmu=gm==='근무', hasAl=isAlert(note);
     const d=toDate(date), isWeekend=d.getDay()===0||d.getDay()===6;
     const cls=isToday?'is-today':hasAl&&isGeunmu?'has-alert':isGeunmu?'geunmu':isWeekend?'weekend':'bibeon';
@@ -868,7 +872,7 @@ let activeYm=today.slice(0,7);
 function renderMonthPage(){ renderMonthTabs(); renderMonthTable(); }
 
 function renderMonthTabs(){
-  const allYms=[...new Set(RAW.map(r=>ymStr((r.data||r)[0])))].sort();
+  const allYms=[...new Set(RAW.map(r=>ymStr(r[0])))].sort();
   if(!allYms.includes(activeYm)) activeYm=allYms[allYms.length-1]||activeYm;
   const tabs=document.getElementById('month-tabs'); tabs.innerHTML='';
   allYms.forEach(ym=>{
@@ -881,10 +885,10 @@ function renderMonthTabs(){
 }
 
 function renderMonthTable(){
-  const rows=RAW.filter(r=>ymStr((r.data||r)[0])===activeYm&&(r.data||r)[2]==='근무');
+  const rows=RAW.filter(r=>ymStr(r[0])===activeYm&&r[2]==='근무');
   const tbody=document.getElementById('month-tbody'); tbody.innerHTML='';
   rows.forEach(row=>{
-    const[date,dow,,driver,p1,p2,p3,note]=row.data||row;
+    const[date,dow,,driver,p1,p2,p3,note]=row;
     const isToday=date===today;
     const tr=document.createElement('tr'); if(isToday) tr.className='today-row';
     const dc=dow==='토'?'dow-sat':dow==='일'?'dow-sun':'';
@@ -958,14 +962,13 @@ function showToast(msg, type=''){
 let editTarget = null;
 
 function openEditModal(row) {
-  const d = row.data || row;
   editTarget = row;
-  document.getElementById('edit-modal-date').textContent = `${d[0]} (${d[1]}) · ${d[2]}`;
-  document.getElementById('edit-driver').value = d[3] !== '-' ? d[3] : '';
-  document.getElementById('edit-p1').value = d[4] !== '-' ? d[4] : '';
-  document.getElementById('edit-p2').value = d[5] !== '-' ? d[5] : '';
-  document.getElementById('edit-p3').value = d[6] !== '-' ? d[6] : '';
-  document.getElementById('edit-note').value = d[7] || '';
+  document.getElementById('edit-modal-date').textContent = `${row[0]} (${row[1]}) · ${row[2]}`;
+  document.getElementById('edit-driver').value = row[3] !== '-' ? row[3] : '';
+  document.getElementById('edit-p1').value = row[4] !== '-' ? row[4] : '';
+  document.getElementById('edit-p2').value = row[5] !== '-' ? row[5] : '';
+  document.getElementById('edit-p3').value = row[6] !== '-' ? row[6] : '';
+  document.getElementById('edit-note').value = row[7] || '';
   document.getElementById('edit-saving').textContent = '';
   document.getElementById('edit-modal-bg').classList.add('open');
 }
@@ -978,7 +981,7 @@ function closeEditModal(e) {
 async function saveEdit() {
   const saving = document.getElementById('edit-saving');
   saving.textContent = '저장 중...';
-  const rowIdx = editTarget.row;
+  const rowIdx = editTarget._row;
   const driver = document.getElementById('edit-driver').value || '-';
   const p1 = document.getElementById('edit-p1').value || '-';
   const p2 = document.getElementById('edit-p2').value || '-';
@@ -991,8 +994,7 @@ async function saveEdit() {
     if (!json.ok) throw new Error(json.error);
 
     // 로컬 데이터도 즉시 업데이트
-    const d = editTarget.data || editTarget;
-    d[3] = driver; d[4] = p1; d[5] = p2; d[6] = p3; d[7] = note;
+    editTarget[3] = driver; editTarget[4] = p1; editTarget[5] = p2; editTarget[6] = p3; editTarget[7] = note;
     renderAll();
     document.getElementById('edit-modal-bg').classList.remove('open');
     showToast('✅ 구글 시트에 저장되었습니다!');
