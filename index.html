@@ -1054,8 +1054,9 @@ const bgmBtn = document.getElementById('bgm-btn');
 
 function startApp() {
   document.getElementById('bgm-overlay').style.display = 'none';
-  audio.volume = 0.4;
-  audio.play().catch(()=>{});
+  try { audio.volume = 0.4; audio.play().catch(()=>{}); } catch(e) {}
+  // 데이터 로드
+  if(apiUrl) fetchData(); else loadCache();
 }
 
 function toggleBgm() {
@@ -1073,11 +1074,11 @@ function toggleBgm() {
 // ════════════════════════════════════
 if(apiUrl){
   document.getElementById('api-url-input').value=apiUrl;
-  fetchData();
 } else {
-  loadCache();
   setSyncBadge('disconnected','미연결 — ⚙️ 설정 필요');
 }
+// 캐시 데이터는 미리 표시
+loadCache();
 
 // 5분마다 자동 새로고침
 setInterval(()=>{ if(apiUrl) fetchData(); }, 5*60*1000);
