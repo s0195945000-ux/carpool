@@ -98,7 +98,8 @@ body::before{content:'';position:fixed;inset:0;
   background:rgba(0,0,0,.1);border-radius:6px;padding:2px 7px;font-family:'DM Mono',monospace;}
 .drive-card-body{padding:10px 14px 14px;background:#fff;}
 .driver-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.car-img{width:70px;height:42px;border-radius:10px;object-fit:contain;flex-shrink:0;}
+.car-img-wrap{width:70px;height:42px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;overflow:hidden;}
+.car-img{width:100%;height:100%;object-fit:contain;}
 .car-emoji{width:70px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:22px;flex-shrink:0;}
 .driver-info .name{font-size:14px;font-weight:700;}
 .driver-info .role{display:flex;align-items:center;gap:4px;margin-top:2px;}
@@ -122,7 +123,8 @@ body::before{content:'';position:fixed;inset:0;
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
 @media(max-width:500px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
 .stat-cell{padding:16px 10px;background:#fff;text-align:center;position:relative;}
-.stat-car{width:100%;height:34px;object-fit:contain;margin-bottom:4px;}
+.stat-car-wrap{width:100%;border-radius:10px;padding:4px;margin-bottom:4px;}
+.stat-car{width:100%;height:34px;object-fit:contain;display:block;}
 .stat-name{font-size:11px;font-weight:700;margin-bottom:4px;}
 .stat-num{font-size:32px;font-weight:900;line-height:1;font-family:'DM Mono',monospace;}
 .stat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
@@ -676,7 +678,7 @@ function renderNextCards() {
     // car img background
     const carImgStyle = carImg ? 'style="background:'+st.bg+'"' : '';
     const carHtmlStyled = carImg
-      ? '<img class="car-img" src="'+carImg+'" alt="" style="background:'+st.bg+'">'
+      ? '<div class="car-img-wrap" style="background:'+st.bg+'"><img class="car-img" src="'+carImg+'" alt=""></div>'
       : '<div class="car-emoji" style="background:'+st.bg+';color:'+st.ac+'">🚗</div>';
     card.innerHTML = `
       <div class="drive-card-top" style="${topStyle}">
@@ -748,7 +750,7 @@ function renderStats() {
     const div = document.createElement('div'); div.className='stat-cell';
     div.innerHTML = `
       ${isMax?'<div class="crown">👑</div>':''}
-      ${carImg?'<img class="stat-car" src="'+carImg+'" alt="" style="background:'+st.bg+';border-radius:8px;padding:2px">':'<div style="font-size:20px;margin-bottom:4px">🚗</div>'}
+      ${carImg?'<div class="stat-car-wrap" style="background:'+st.bg+'"><img class="stat-car" src="'+carImg+'" alt=""></div>':'<div style="font-size:20px;margin-bottom:4px">🚗</div>'}
       <div class="stat-name" style="color:${st.ac}">${m.label}</div>
       <div class="stat-num" style="color:${st.ac}">${mc}</div>
       <div class="stat-sub">회</div>
